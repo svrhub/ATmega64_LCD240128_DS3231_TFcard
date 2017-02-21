@@ -18,7 +18,7 @@
 #define SDA_OUT		DDRA|=(1<<PORTA0)
 #define I2C_DELAY	_delay_us(1)
 
-
+#define NOP()	asm("nop")
 
 void I2C_Start(void)
 {
@@ -101,21 +101,20 @@ unsigned char I2C_ReceiveByte(void)
 {
 	unsigned char i=0;
 	unsigned char ReceiveByte=0;
-	SDA_H;
 	SDA_IN;
 	SDA_H;
 	for (i=0;i<8;i++)
 	{
 		ReceiveByte <<= 1;
-		SCL_H;
+		SCL_H;NOP();NOP();NOP();NOP();NOP();NOP();NOP();
 		if (SDA_READ)
 		{
 			ReceiveByte	|=1;
 		}
 		SCL_L;
-		I2C_DELAY;
-	}
+	}	
 	SDA_OUT;
+	SDA_H;
 	return ReceiveByte;
 }
 

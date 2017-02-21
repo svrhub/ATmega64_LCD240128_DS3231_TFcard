@@ -22,10 +22,10 @@ typedef unsigned char	UCHAR;
 typedef unsigned char	BYTE;
 
 /* These types must be 16-bit integer */
-typedef short			SHORT;
-typedef unsigned short	USHORT;
-typedef unsigned short	WORD;
-typedef unsigned short	WCHAR;
+typedef int				SHORT;
+typedef unsigned int	USHORT;
+typedef unsigned int	WORD;
+typedef unsigned int	WCHAR;
 
 /* These types must be 32-bit integer */
 typedef long			LONG;

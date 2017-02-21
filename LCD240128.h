@@ -38,7 +38,7 @@
 void LCD_Busy()
 {
 	LCD_CD_H;NOP();NOP();NOP();					// CD高，读状态字节
-	LCD_CE_L;NOP();NOP();NOP();				// CE低，开片选信号
+	LCD_CE_L;NOP();NOP();NOP();					// CE低，开片选信号
 	LCD_RD_L;NOP();NOP();NOP();					// RD低，打开读信号
 	DDR_IN;
 	while((READ_DATA_PORT & (1<<LCD_RW)) ==0); NOP();NOP();NOP();      // 读取状态字节
@@ -74,6 +74,23 @@ void LCD_SendData(unsigned char lcd_data)
 	LCD_CE_H;NOP();NOP();NOP();
 	LCD_RW_H;NOP();NOP();NOP();
 	LCD_CD_H;
+}
+
+unsigned char LCD_ReadData()
+{
+	unsigned char lcd_data;
+	LCD_Busy();
+	LCD_CD_L;NOP();NOP();NOP();				
+	LCD_RD_L;NOP();NOP();NOP();
+	LCD_RW_H;NOP();NOP();NOP();
+	LCD_CE_L;NOP();NOP();NOP();	
+	DDR_IN;
+	lcd_data=READ_DATA_PORT;NOP();NOP();NOP();
+	DDR_OUT;NOP();NOP();NOP();
+	LCD_RD_H;NOP();NOP();NOP();   	 				
+	LCD_CE_H;
+	LCD_CD_H;						 			    
+	return lcd_data;
 }
 
 void LCD_SendDoubleByteCom(unsigned char lcd_com,unsigned char lcd_data1,unsigned char lcd_data2)
@@ -220,6 +237,113 @@ void displayString_32x64(unsigned char x,unsigned char y,unsigned char *s)
 		LCD_Display_32x64(x,y,width,*s);		
 		s++;
 		x=x+width;
+	}
+}
+/*******************************************************/
+/******   函数名称: lcd_dis_point()               ******/
+/******   功    能: 指定位置画点或清点            ******/
+/******   参    数: x(0~239),y(0~127)             ******/
+/******             pointbit=0:清点pointbit=1:画点******/
+/******   返回值  : 无                            ******/
+/*******************************************************/
+void Lcd_drawPixel(unsigned char x,unsigned char y, unsigned char pointbit)
+{
+	int addr;
+	if( (x>240) || (y>128) )return;
+	LCD_SendCom(0x98);
+	addr =0x00+x/8+y*30;
+	LCD_SendDoubleByteCom(0x24,addr%256,addr/256);
+	if(pointbit)
+	LCD_SendCom(0xf8 | (7-x%8));  // 0xf8为画点命令
+	else
+	LCD_SendCom(0xf0 | (7-x%8));  // 0xf0为清点命令
+}
+
+/************************************************************************
+	任意位置画线 
+	x1	:起点横坐标 0-127	y1	:起点纵坐标 0-127
+	x2	:终点横坐标 0-127	y2	:终点纵坐标 0-127
+	attr:0	消线
+		:1	画线      
+	使用的是Bresenham算法                                        
+************************************************************************/
+void drawLine(unsigned char x1,unsigned char y1,unsigned char x2,unsigned char y2,unsigned char attr)
+{
+	int dx,dy,inc_x,inc_y,ds,i,xerr,yerr;
+	
+	
+	dx=x2-x1;
+	dy=y2-y1;
+	
+	if (dx==0)		//	此时为竖直线
+	{	
+		inc_x=0;
+	}		
+	if(!(dx>>15)){		//	设置步进方向
+		inc_x=1;
+	}	
+	else
+	{
+		inc_x=-1;
+		dx=-dx;
+	}
+	if (dy==0){		//	此时为水平线
+		inc_y=0;
+	}		
+	if (!(dy>>15))
+	{
+		inc_y=1;
+	}
+	else
+	{
+		inc_y=-1;
+		dy=-dy;
+	}
+		
+	if (dx>dy){ds=dx;}
+	else{ds=dy;}	//选取基本增量坐标轴
+	
+	xerr=dx;yerr=dy;
+	for(i = 0; i <= ds; i++)				//画线输出
+	{
+		Lcd_drawPixel(x1, y1, attr);			//画点
+		xerr += dx;
+		yerr += dy;
+		if(xerr > ds)
+		{
+			xerr -= ds;
+			x1   += inc_x;			
+		}
+		if(yerr > ds)
+		{
+			yerr -= ds;
+			y1   += inc_y;
+		}
+	}
+}
+/************************************************************************
+	任意位置画圆 
+	x	:圆心横坐标 0-127
+	y	:圆心纵坐标 0-127
+	r	:圆半径
+	attr:0	消圆
+		:1	画圆      
+	使用的是Bresenham算法                                        
+************************************************************************/
+void drawCircle(unsigned char x, unsigned char y, unsigned char r, unsigned char attr)
+{
+	unsigned char dx, dy = r;
+	for(dx = 0; dx <= r; dx++)
+	{
+		while((r * r + 1 - dx * dx) < (dy * dy)) dy--;
+		Lcd_drawPixel(x + dx, y - dy, attr);
+		Lcd_drawPixel(x - dx, y - dy, attr);
+		Lcd_drawPixel(x - dx, y + dy, attr);
+		Lcd_drawPixel(x + dx, y + dy, attr);
+		Lcd_drawPixel(x + dy, y - dx, attr);
+		Lcd_drawPixel(x - dy, y - dx, attr);
+		Lcd_drawPixel(x - dy, y + dx, attr);
+		Lcd_drawPixel(x + dy, y + dx, attr);
 	}
 }
 #endif /* LCD240128_H_ */

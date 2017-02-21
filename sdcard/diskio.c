@@ -71,34 +71,6 @@ DSTATUS Stat = STA_NOINIT;	/* Disk status */
 static
 BYTE CardType;			/* b0:MMC, b1:SDv1, b2:SDv2, b3:Block addressing */
 
-static
-void dly_us (UINT n)	/* Delay n microseconds (avr-gcc -Os) */
-{
-	do {
-		PINB;
-		#if F_CPU >= 6000000
-		PINB;
-		#endif
-		#if F_CPU >= 7000000
-		PINB;
-		#endif
-		#if F_CPU >= 8000000
-		PINB;
-		#endif
-		#if F_CPU >= 9000000
-		PINB;
-		#endif
-		#if F_CPU >= 10000000
-		PINB;
-		#endif
-		#if F_CPU >= 12000000
-		PINB; PINB;
-		#endif
-		#if F_CPU >= 14000000
-		#error Too fast clock
-		#endif
-	} while (--n);
-}
 
 void SPI_Low(void)
 {//SPI低速模式
@@ -369,7 +341,11 @@ DSTATUS disk_status (
 DSTATUS disk_initialize (
 	BYTE drv		/* Physical drive nmuber (0) */
 )
-{
+{	
+	extern unsigned char FLAG_Disk_Init;
+
+	if (FLAG_Disk_Init)	return 0;	/*如果已经执行过初始化，则后续函数调用初始化将直接跳过*/
+	
 	BYTE n, ty, cmd, buf[4];
 	UINT tmr;
 	DSTATUS s;
@@ -377,7 +353,7 @@ DSTATUS disk_initialize (
 
 	if (drv) return RES_NOTRDY;
 	
-	_delay_ms(10);			/* 10ms */
+	//_delay_ms(10);			/* 10ms */
 	
 	SPI_Init();
 	SPI_Low();	
@@ -416,9 +392,14 @@ DSTATUS disk_initialize (
 	CardType = ty;
 	s = ty ? 0 : STA_NOINIT;
 	Stat = s;
-
+	
+	if (!s)		/*初始化成功*/
+	{
+		FLAG_Disk_Init=1;
+	}
+	
 	deselect();
-
+	
 	return s;
 }
 

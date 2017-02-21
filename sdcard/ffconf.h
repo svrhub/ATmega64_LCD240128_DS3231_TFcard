@@ -36,7 +36,7 @@
 /   3: f_lseek is removed in addition to 2. */
 
 
-#define	_USE_STRFUNC	0	/* 0:Disable or 1-2:Enable */
+#define	_USE_STRFUNC	2	/* 0:Disable or 1-2:Enable */
 /* To enable string functions, set _USE_STRFUNC to 1 or 2. */
 
 
@@ -48,7 +48,7 @@
 /* To enable fast seek feature, set _USE_FASTSEEK to 1. */
 
 
-#define _USE_LABEL		1	/* 0:Disable or 1:Enable */
+#define _USE_LABEL		0	/* 0:Disable or 1:Enable */
 /* To enable volume label functions, set _USE_LAVEL to 1 */
 
 
@@ -155,7 +155,7 @@
 / System Configurations
 /----------------------------------------------------------------------------*/
 
-#define _WORD_ACCESS	1	/* 0 or 1 */
+#define _WORD_ACCESS	0	/* 0 or 1 */
 /* Set 0 first and it is always compatible with all platforms. The _WORD_ACCESS
 /  option defines which access method is used to the word data on the FAT volume.
 /

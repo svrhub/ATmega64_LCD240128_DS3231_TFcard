@@ -39,13 +39,13 @@ struct{
 	unsigned char hour;
 	unsigned char minute;
 	unsigned char second;
-}Time={0x16,0x6,0x26,0x07,0x02,0x38,0x00,};
+}Time={0x17,0x1,0x24,0x02,0x00,0x12,0x00,};
 	
 unsigned char DS3231_Date[]={"2000年00月00日"};
 unsigned char DS3231_Time[10]={"00:00:00"};
 unsigned char DS3231_Week[7]={"星期一"};
 unsigned char weeks[7][7]={{"星期一"},{"星期二"},{"星期三"},{"星期四"},{"星期五"},{"星期六"},{"星期日"}};
-unsigned char DS3231_Temperature[11]={"25;"};
+unsigned char DS3231_Temperature[5]={"25度"};
 char 		  Temperature_Sign; 		 				   								//温度正负
 unsigned char Temperature_Integer, Temperature_Decimals; 	//温度整数，温度小数
 
@@ -161,7 +161,7 @@ void Time_DisplayString()
 	DS3231_Time[4]	=	(Time.minute&0x0F)+0x30;
 	DS3231_Time[6]	=	(Time.second>>4)+0x30;
 	DS3231_Time[7]	=	(Time.second&0x0F)+0x30;
-	//strcpy(DS3231_Week,weeks[Time.week-1]);	
+	strcpy(DS3231_Week,weeks[Time.week-1]);	
 	ReadTemp_DS3231();
 	DS3231_Temperature[0]=(HEX_BCD(Temperature_Integer)>>4)+0x30;
 	DS3231_Temperature[1]=(HEX_BCD(Temperature_Integer)&0x0F)+0x30;

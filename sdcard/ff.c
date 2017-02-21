@@ -95,7 +95,6 @@
 /                   Changed option name _FS_SHARE to _FS_LOCK.
 / Jan 24,'13 R0.09b Added f_setlabel() and f_getlabel(). (_USE_LABEL = 1)
 /---------------------------------------------------------------------------*/
-
 #include "ff.h"			/* FatFs configurations and declarations */
 #include "diskio.h"		/* Declarations of low level disk I/O functions */
 
